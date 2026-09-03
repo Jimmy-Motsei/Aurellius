@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import WhatsAppWidget from './WhatsAppWidget'
 import { TrackedLink } from '@/components/analytics/TrackedLink'
 import { footerNavigation } from '@/data/footer-navigation'
+import { buildWhatsAppLink } from '@/lib/whatsapp'
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 
@@ -24,13 +26,26 @@ const itemVariants = {
 
 // ─── Shared link class ────────────────────────────────────────────────────────
 
+// min-h-[44px] + inline-flex is the tap-target fix: these links rendered at
+// ~15–16px tall, well under the 44px Apple HIG / WCAG AAA target size. The font
+// size is deliberately unchanged — the height comes from the box, not the type.
+// The vertical lists below drop their gap-3 to compensate, so the taller rows
+// tile edge to edge instead of ballooning the footer or overlapping each other.
 const linkClass =
   'font-body text-[13px] font-light transition-colors duration-200 ' +
-  'hover:text-[var(--color-cyan)]'
+  'hover:text-[var(--color-cyan)] inline-flex items-center min-h-[44px]'
+
+// Legal row: same treatment at the smaller 12px size used in the bottom bar.
+const legalLinkClass =
+  'font-body text-[12px] font-light transition-colors duration-200 ' +
+  'hover:text-[var(--color-cyan)] inline-flex items-center min-h-[44px]'
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Footer() {
+  // Drives the footer WhatsApp link's pre-filled opener per route.
+  const pathname = usePathname()
+
   return (
     <>
       <footer style={{ background: 'var(--gradient-navy-soft)' }}>
@@ -46,7 +61,11 @@ export default function Footer() {
 
               {/* Brand column */}
               <motion.div variants={itemVariants} className="lg:col-span-1">
-                <Link href="/" aria-label="Maru Online — home" className="inline-block mb-6">
+                <Link
+                  href="/"
+                  aria-label="Maru Online — home"
+                  className="inline-flex items-center py-1 mb-5"
+                >
                   <Image
                     src="/images/brand/maru-logo-reversed.png"
                     alt="Maru Online"
@@ -71,7 +90,7 @@ export default function Footer() {
                       rel="noopener noreferrer"
                       aria-label={item.name}
                       className="
-                        h-9 w-9 rounded-full flex items-center justify-center
+                        h-11 w-11 rounded-full flex items-center justify-center
                         transition-[color,border-color] duration-200
                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-cyan)]
                       "
@@ -102,7 +121,7 @@ export default function Footer() {
                 >
                   Navigation
                 </h4>
-                <ul className="flex flex-col gap-3 list-none m-0 p-0">
+                <ul className="flex flex-col list-none m-0 p-0">
                   {footerNavigation.main.map((item) => (
                     <li key={item.name}>
                       <Link
@@ -125,7 +144,7 @@ export default function Footer() {
                 >
                   Services
                 </h4>
-                <ul className="flex flex-col gap-3 list-none m-0 p-0">
+                <ul className="flex flex-col list-none m-0 p-0">
                   {[
                     { name: 'Operations Diagnostic',      href: '/services/operations-diagnostic' },
                     { name: 'Workflow Integration',    href: '/services/workflow-integration' },
@@ -153,7 +172,7 @@ export default function Footer() {
                 >
                   Get in Touch
                 </h4>
-                <ul className="flex flex-col gap-3 list-none m-0 p-0">
+                <ul className="flex flex-col list-none m-0 p-0">
                   <li>
                     <TrackedLink
                       href="mailto:hello@maruonline.com"
@@ -167,7 +186,7 @@ export default function Footer() {
                   </li>
                   <li>
                     <TrackedLink
-                      href="https://wa.me/27635643263"
+                      href={buildWhatsAppLink(pathname)}
                       event="whatsapp_click"
                       eventData={{ source: 'footer' }}
                       target="_blank"
@@ -179,13 +198,13 @@ export default function Footer() {
                     </TrackedLink>
                   </li>
                   <li
-                    className="font-body text-[13px] font-light"
+                    className="font-body text-[13px] font-light py-2"
                     style={{ color: 'var(--color-ink-inverted-muted)' }}
                   >
                     Gauteng, South Africa
                   </li>
                   <li
-                    className="font-body text-[13px] font-light"
+                    className="font-body text-[13px] font-light py-2"
                     style={{ color: 'var(--color-ink-inverted-muted)' }}
                   >
                     Mon–Fri, 9am–6pm SAST
@@ -217,7 +236,7 @@ export default function Footer() {
                     <li key={item.name}>
                       <Link
                         href={item.href}
-                        className="font-body text-[12px] font-light transition-colors duration-200 hover:text-[var(--color-cyan)]"
+                        className={legalLinkClass}
                         style={{ color: 'rgba(250,250,248,0.35)' }}
                       >
                         {item.name}
@@ -228,7 +247,7 @@ export default function Footer() {
                     <button
                       type="button"
                       onClick={() => window.dispatchEvent(new Event('open-cookie-preferences'))}
-                      className="font-body text-[12px] font-light transition-colors duration-200 hover:text-[var(--color-cyan)] focus-visible:outline-none focus-visible:underline"
+                      className={`${legalLinkClass} focus-visible:outline-none focus-visible:underline`}
                       style={{ color: 'rgba(250,250,248,0.35)' }}
                     >
                       Cookie Preferences

@@ -2,6 +2,12 @@ import { defineConfig } from '@playwright/test';
 
 const skipWebServer = process.env.PW_SKIP_WEBSERVER === '1';
 
+// Point the suite at an already-running server — in particular a production
+// build (`next build && next start`), which is the only way to catch the
+// rendering bugs `next dev` hides. See CLAUDE.md §7, "SSR bugs are invisible in
+// next dev".
+const baseURL = process.env.PW_BASE_URL || 'http://localhost:3000';
+
 export default defineConfig({
   testDir: './tests/visual',
   fullyParallel: false,
@@ -17,7 +23,7 @@ export default defineConfig({
     },
   },
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     reducedMotion: 'reduce',

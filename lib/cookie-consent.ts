@@ -68,3 +68,40 @@ export const useCookieConsent = () => {
 
   return { consent, loaded };
 };
+
+// ─── Cookie banner visibility ─────────────────────────────────────────────────
+// The banner is fixed at bottom-left (300px wide) and the floating WhatsApp
+// bubble is fixed at bottom-right. On a 375px viewport those two overlap by
+// 33×44px, and because the bubble paints over the banner it lands directly on
+// the DECLINE button — an overlay obstructing a consent control. Measured live
+// at 375×812 on 3 Sep 2026 before this fix.
+//
+// Rather than nudge either element and hope, the bubble subscribes to this
+// signal and takes itself out of the way while the banner is up.
+
+export const COOKIE_BANNER_EVENT = 'maru:cookie-banner-visibility';
+
+let bannerVisible = false;
+
+/** Called by the banner itself as it mounts and dismisses. */
+export const setCookieBannerVisible = (visible: boolean) => {
+  if (typeof window === 'undefined') return;
+  bannerVisible = visible;
+  window.dispatchEvent(new CustomEvent(COOKIE_BANNER_EVENT, { detail: visible }));
+};
+
+/** True while the consent banner is on screen. Safe during SSR (returns false). */
+export const useCookieBannerVisible = (): boolean => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // The banner mounts on an 800ms timer, so it may already be up (or already
+    // dismissed) by the time a subscriber mounts. Seed from the module value.
+    setVisible(bannerVisible);
+    const handler = (e: Event) => setVisible((e as CustomEvent<boolean>).detail);
+    window.addEventListener(COOKIE_BANNER_EVENT, handler);
+    return () => window.removeEventListener(COOKIE_BANNER_EVENT, handler);
+  }, []);
+
+  return visible;
+};

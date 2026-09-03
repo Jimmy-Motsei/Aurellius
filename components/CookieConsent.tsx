@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { setCookieBannerVisible } from '@/lib/cookie-consent'
 
 const STORAGE_KEY = 'maru-cookie-consent'
 
@@ -11,20 +12,27 @@ export default function CookieConsent() {
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (!stored) {
-      const timer = setTimeout(() => setVisible(true), 800)
-      return () => clearTimeout(timer)
+      const timer = setTimeout(() => {
+        setVisible(true)
+        // Tell the floating WhatsApp bubble to stand down — it otherwise paints
+        // over this banner's DECLINE button. See lib/cookie-consent.ts.
+        setCookieBannerVisible(true)
+      }, 800)
+      return () => {
+        clearTimeout(timer)
+        setCookieBannerVisible(false)
+      }
     }
   }, [])
 
-  function accept() {
-    localStorage.setItem(STORAGE_KEY, 'accepted')
+  function dismiss(choice: 'accepted' | 'declined') {
+    localStorage.setItem(STORAGE_KEY, choice)
     setVisible(false)
+    setCookieBannerVisible(false)
   }
 
-  function decline() {
-    localStorage.setItem(STORAGE_KEY, 'declined')
-    setVisible(false)
-  }
+  const accept  = () => dismiss('accepted')
+  const decline = () => dismiss('declined')
 
   if (!visible) return null
 

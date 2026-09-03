@@ -138,7 +138,14 @@ export default function Home() {
           </FadeUp>
 
           <FadeUp delay={0.22}>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            {/* data-maru-primary-cta: the floating WhatsApp bubble watches for this
+                and hides itself while these buttons are on screen. On a 375px
+                viewport the bubble sits 6px above this row and covers its right
+                end as soon as the page scrolls. See components/ui/WhatsAppWidget. */}
+            <div
+              data-maru-primary-cta
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4"
+            >
               <Button href="/booking" variant="primary" className="w-full sm:w-auto justify-center">
                 Book a discovery call
               </Button>
