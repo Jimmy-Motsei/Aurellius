@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { escapeHtml, escapeHtmlPreserveBreaks } from '@/lib/security'
 import { verifyRecaptcha } from '@/lib/recaptcha'
+import { buildWhatsAppLink, WHATSAPP_DISPLAY } from '@/lib/whatsapp'
 
 const BREVO_API = 'https://api.brevo.com/v3'
 
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
               </p>
               <p style="font-size:15px;color:#4A5568;line-height:1.8;margin:0 0 24px">
                 In the meantime, feel free to WhatsApp us directly on
-                <a href="https://wa.me/27635643263" style="color:#3DB8C6">+27 63 564 3263</a>
+                <a href="${buildWhatsAppLink('/contact')}" style="color:#3DB8C6">${WHATSAPP_DISPLAY}</a>
                 if it's urgent.
               </p>
               <p style="font-size:14px;color:#718096;margin:0">

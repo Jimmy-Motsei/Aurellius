@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import ContactFormWithRecaptcha from './ContactFormWithRecaptcha'
 import Button from '@/components/ui/Button'
+import { buildWhatsAppLink } from '@/lib/whatsapp'
 import { TrackedLink } from '@/components/analytics/TrackedLink'
 import { FadeUp } from '@/components/ui/Animate'
 import { BGPattern } from '@/components/ui/bg-pattern'
@@ -153,7 +154,7 @@ export default function ContactPage() {
                         WhatsApp — fastest
                       </p>
                       <TrackedLink
-                        href="https://wa.me/27635643263"
+                        href={buildWhatsAppLink('/contact')}
                         event="whatsapp_click"
                         eventData={{ source: 'contact_page' }}
                         target="_blank"

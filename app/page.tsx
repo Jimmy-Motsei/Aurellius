@@ -3,6 +3,7 @@ import Button from "@/components/ui/Button";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/Animate";
 import AssessmentFormSection from "@/components/homepage/AssessmentFormSection";
 import PrimaryServicesFilter from "@/components/homepage/PrimaryServicesFilter";
+import { CaseStudyProofStrip } from "@/components/homepage/CaseStudyProofStrip";
 import ImageSplit from "@/components/ui/ImageSplit";
 import ImageBand from "@/components/ui/ImageBand";
 import { BGPattern } from "@/components/ui/bg-pattern";
@@ -138,7 +139,14 @@ export default function Home() {
           </FadeUp>
 
           <FadeUp delay={0.22}>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            {/* data-maru-primary-cta: the floating WhatsApp bubble watches for this
+                and hides itself while these buttons are on screen. On a 375px
+                viewport the bubble sits 6px above this row and covers its right
+                end as soon as the page scrolls. See components/ui/WhatsAppWidget. */}
+            <div
+              data-maru-primary-cta
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4"
+            >
               <Button href="/booking" variant="primary" className="w-full sm:w-auto justify-center">
                 Book a discovery call
               </Button>
@@ -292,6 +300,16 @@ export default function Home() {
           </FadeUp>
 
           <PrimaryServicesFilter />
+
+          {/* Proof strip (brief item 08) — placed here, immediately after the
+              services choice, so the question "can they actually do it" is
+              answered at the point it gets asked. Contains a marked placeholder
+              until Jimmy supplies a shareable GrowthIQ metric. */}
+          <div style={{ marginTop: "3rem" }}>
+            <FadeUp>
+              <CaseStudyProofStrip />
+            </FadeUp>
+          </div>
         </div>
       </section>
 

@@ -17,7 +17,7 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
  * actually talk to suppliers, so it is always reachable.
  */
 function WhatsAppButton({
-  phone = "27635643263",
+  phone = "27678904113",
   message = "",
   variant = "fab",
   label = "Chat on WhatsApp",

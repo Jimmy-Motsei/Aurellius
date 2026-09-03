@@ -75,6 +75,41 @@ const nextConfig: NextConfig = {
         destination: '/',
         permanent: true,
       },
+      // Pre-migration article URLs from the retired static site. Both were live
+      // 404s until Sep 2026 and were still taking real traffic — the Next.js
+      // migration shipped without 301s for them. They point at
+      // /operations-assessment, not /insights: the planned articles cover
+      // BEE/ESD, not AI regulation or adoption, so they are not a like-for-like
+      // replacement and the topical mismatch would just bounce.
+      //
+      // The .html variants are listed explicitly and MUST stay above the generic
+      // `/:path(.+)\\.html` rule below. Redirects are evaluated in array order,
+      // so without these the .html form would first rewrite to the extensionless
+      // form and only then redirect again — a two-hop chain that dilutes the
+      // signal. Listed here, each is a single hop.
+      //
+      // These emit 308, not 301: that is what Next.js `permanent: true`
+      // produces, and search engines treat the two identically.
+      {
+        source: '/ai-regulation-human-security-south-africa',
+        destination: '/operations-assessment',
+        permanent: true,
+      },
+      {
+        source: '/ai-regulation-human-security-south-africa.html',
+        destination: '/operations-assessment',
+        permanent: true,
+      },
+      {
+        source: '/ai-adoption-south-african-smbs',
+        destination: '/operations-assessment',
+        permanent: true,
+      },
+      {
+        source: '/ai-adoption-south-african-smbs.html',
+        destination: '/operations-assessment',
+        permanent: true,
+      },
       {
         source: '/:path(.+)\\.html',
         destination: '/:path',

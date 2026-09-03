@@ -1,19 +1,104 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { trackOutbound } from '@/components/analytics/TrackedLink'
+import { useCookieBannerVisible } from '@/lib/cookie-consent'
+import { buildWhatsAppLink } from '@/lib/whatsapp'
 
 // Fixed floating WhatsApp button — full implementation deferred to a later session.
 // Renders a pulse-animated button that opens WhatsApp on tap.
+//
+// It yields to two things.
+//
+// 1. The cookie-consent banner. Both are fixed to the bottom of the viewport and
+//    at 375px wide they overlap by 33×44px, with the bubble painting on top of
+//    the banner's DECLINE button. Obstructing a consent control is not something
+//    to leave to z-index luck, so the bubble hides until the banner is dismissed.
+//
+// 2. The page's primary CTA. A fixed button and a full-bleed in-flow CTA at the
+//    bottom of a hero cannot be separated by repositioning — at 375px the CTA
+//    spans the full content width, so there is nowhere along the bottom edge for
+//    the bubble to sit. Measured at 375×812 they clear each other by 6px at rest
+//    and overlap by 4px after ~60px of scroll.
+//
+//    This compares the two rectangles directly rather than using an
+//    IntersectionObserver. The observer form is the obvious choice and was
+//    written first, but it answers the wrong question — "is the CTA on screen"
+//    is a proxy for "do these two boxes collide", and it hides the bubble
+//    through a long stretch of scrolling where nothing actually overlaps.
+//    Measuring the collision is both the real condition and one that can be
+//    verified from a script.
 export default function WhatsAppWidget() {
+  // The bubble renders on every route, so its opener is whichever page the
+  // visitor is actually on. Unmapped routes fall back to the general opener.
+  const pathname = usePathname()
+
+  const bannerVisible = useCookieBannerVisible()
+  const [ctaCollision, setCtaCollision] = useState(false)
+  const ref = useRef<HTMLAnchorElement>(null)
+
+  useEffect(() => {
+    const measure = () => {
+      const bubble = ref.current
+      const cta = document.querySelector('[data-maru-primary-cta]')
+      if (!bubble || !cta) {
+        setCtaCollision(false)
+        return
+      }
+      const b = bubble.getBoundingClientRect()
+      const c = cta.getBoundingClientRect()
+      // 12px of breathing room on each axis so the bubble gets out of the way
+      // just before the edges touch, not at the moment they do.
+      const pad = 12
+      setCtaCollision(
+        b.left - pad < c.right &&
+        b.right + pad > c.left &&
+        b.top - pad < c.bottom &&
+        b.bottom + pad > c.top,
+      )
+    }
+
+    let frame = 0
+    const onChange = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(measure)
+    }
+
+    measure()
+    window.addEventListener('scroll', onChange, { passive: true })
+    window.addEventListener('resize', onChange)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onChange)
+      window.removeEventListener('resize', onChange)
+    }
+    // Re-measure on navigation: the CTA belongs to the page, not to this
+    // component, so it is a different node (or absent) after a route change.
+  }, [pathname])
+
+  const hidden = bannerVisible || ctaCollision
+
   return (
     <a
-      href="https://wa.me/27635643263"
+      ref={ref}
+      href={buildWhatsAppLink(pathname)}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"
       onClick={() => trackOutbound('whatsapp_click', { source: 'floating_button' })}
+      // Hidden from the accessibility tree and from pointer events too, not just
+      // faded — a 0-opacity link still takes taps and still gets announced.
+      aria-hidden={hidden}
+      tabIndex={hidden ? -1 : undefined}
       style={{
         position: 'fixed',
+        opacity: hidden ? 0 : 1,
+        pointerEvents: hidden ? 'none' : 'auto',
+        // Asymmetric on purpose: leaving is instant, returning fades. A
+        // symmetric fade would keep the bubble painted over the CTA for the
+        // whole 200ms it takes to disappear — still an overlap.
+        transition: hidden ? 'none' : 'opacity 0.2s ease',
         bottom: '24px',
         right: '24px',
         zIndex: 50,

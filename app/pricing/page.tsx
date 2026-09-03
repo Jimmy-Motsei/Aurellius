@@ -219,12 +219,114 @@ export default function PricingPage() {
             </div>
           </FadeUp>
 
+          {/* ── Summary strip ──────────────────────────────────────────────
+              All three prices in one glance. Each detailed card below carries
+              four feature bullets, so a visitor comparing prices otherwise has
+              to scroll past the full contents of two cards to reach the third
+              number. Rows are links, not a static table — each jumps to its own
+              card.
+
+              Duration sits under the title rather than in its own column so the
+              grid stays three columns at every width. A fourth column that
+              disappears on mobile would leave the remaining cells misaligned,
+              and stacking is what a narrow viewport wants anyway.
+              ──────────────────────────────────────────────────────────────── */}
+          <FadeUp>
+            <div
+              style={{
+                border:       '1px solid var(--color-border-card)',
+                borderRadius: '8px',
+                overflow:     'hidden',
+                marginBottom: '3rem',
+              }}
+            >
+              <div
+                aria-hidden="true"
+                className="grid grid-cols-[1.75rem_1fr_auto] sm:grid-cols-[2.5rem_1fr_auto] gap-3 sm:gap-4 items-center px-4 sm:px-6 py-3"
+                style={{
+                  borderBottom:    '1px solid var(--color-border-default)',
+                  backgroundColor: 'var(--color-bg-primary)',
+                  fontFamily:      'var(--font-body)',
+                  fontSize:        'var(--text-label)',
+                  fontWeight:      500,
+                  letterSpacing:   'var(--tracking-eyebrow)',
+                  textTransform:   'uppercase',
+                  color:           'var(--color-ink-tertiary)',
+                }}
+              >
+                <span />
+                <span>Engagement</span>
+                <span style={{ textAlign: 'right' }}>Price</span>
+              </div>
+
+              <ul className="list-none m-0 p-0">
+                {engagements.map((eng, i) => (
+                  <li key={eng.id}>
+                    <a
+                      href={`#${eng.id}`}
+                      className="grid grid-cols-[1.75rem_1fr_auto] sm:grid-cols-[2.5rem_1fr_auto] gap-3 sm:gap-4 items-center no-underline px-4 sm:px-6 py-3.5 transition-colors duration-200 hover:bg-[var(--color-bg-primary)]"
+                      style={{
+                        minHeight: '44px',
+                        borderTop: i === 0 ? 'none' : '1px solid var(--color-border-default)',
+                      }}
+                    >
+                      <span className="section-number">{eng.label}</span>
+                      <span>
+                        <span
+                          style={{
+                            display:    'block',
+                            fontFamily: 'var(--font-body)',
+                            fontSize:   'var(--text-body-sm)',
+                            fontWeight: 500,
+                            color:      'var(--color-ink-primary)',
+                          }}
+                        >
+                          {eng.title}
+                        </span>
+                        <span
+                          style={{
+                            display:    'block',
+                            fontFamily: 'var(--font-body)',
+                            fontSize:   'var(--text-meta)',
+                            fontWeight: 300,
+                            color:      'var(--color-ink-tertiary)',
+                            marginTop:  '0.125rem',
+                          }}
+                        >
+                          <span className="sr-only">Duration: </span>
+                          {eng.scope}
+                        </span>
+                      </span>
+                      <span
+                        className="text-[0.9375rem] sm:text-[1.125rem]"
+                        style={{
+                          textAlign:  'right',
+                          fontFamily: 'var(--font-display)',
+                          fontWeight: 600,
+                          color:      'var(--color-navy)',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        <span className="sr-only">Price: </span>
+                        {eng.price}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </FadeUp>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
             {engagements.map((eng) => (
               <FadeUp key={eng.id}>
                 <div
+                  id={eng.id}
                   className="card-lift"
                   style={{
+                    // Anchor target for the summary strip above. The offset keeps
+                    // the card header clear of the fixed nav when jumped to.
+                    scrollMarginTop: '120px',
                     // Featured cards retint the card token rather than setting a
                     // background outright, so .card-lift still drives the hover brighten.
                     ...(eng.featured ? { '--color-bg-card': 'var(--color-gold-light)' } as React.CSSProperties : {}),

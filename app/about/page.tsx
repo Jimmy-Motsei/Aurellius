@@ -4,6 +4,7 @@ import Button from "@/components/ui/Button";
 import CardNavy from "@/components/ui/CardNavy";
 import CardProof from "@/components/ui/CardProof";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/Animate";
+import { CaseStudyCallout } from "@/components/marketing/CaseStudyCallout";
 import { seo } from '@/lib/seo'
 
 export const metadata: Metadata = {
@@ -206,6 +207,21 @@ export default function AboutPage() {
               </CardProof>
             </StaggerChild>
           </StaggerParent>
+        </div>
+      </section>
+
+      {/* ── Case study (brief item 08) ── */}
+      <section
+        className={`${outerPad} py-16`}
+        style={{ backgroundColor: "var(--color-bg-primary)" }}
+      >
+        <div className={innerNarrow}>
+          <FadeUp>
+            <CaseStudyCallout
+              source="about"
+              line="GrowthIQ — the most recent engagement, documented end to end."
+            />
+          </FadeUp>
         </div>
       </section>
 

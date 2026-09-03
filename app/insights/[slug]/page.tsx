@@ -4,7 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { PortableText, type PortableTextComponents } from "next-sanity";
 import { getInsightBySlug, getInsightSlugs } from "@/lib/insights/getInsights";
-import { OG_ALT } from "@/lib/seo";
+import { OG_ALT, seo } from "@/lib/seo";
 
 // ─── Static params ─────────────────────────────────────────────────────────────
 
@@ -22,17 +22,37 @@ export async function generateMetadata(
   const article = await getInsightBySlug(slug);
   if (!article) return { title: "Not Found" };
   const description = article.seoDescription || article.excerpt;
+
+  // Build on seo() rather than hand-rolling openGraph. This block previously
+  // set its own openGraph object, which — per the trap documented in lib/seo.ts
+  // — replaces the root layout's wholesale: these articles were shipping with
+  // no twitter card and no og:locale. Spreading seo() keeps those, and the
+  // overrides below add what is specific to an article.
+  const base = seo(`/insights/${slug}`);
+
+  // The article's own cover, when the editor set one, otherwise the site card.
+  const ogImage = article.image.startsWith("http")
+    ? [{ url: article.image, width: 1200, height: 675, alt: article.title }]
+    : [{ url: "/opengraph-image", width: 1200, height: 630, alt: OG_ALT }];
+
   return {
+    ...base,
     title: `${article.seoTitle || article.title} | Maru Online`,
     description,
-    alternates: { canonical: `/insights/${slug}` },
     openGraph: {
-      url: `/insights/${slug}`,
-      siteName: "Maru Online",
-      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: OG_ALT }],
+      ...base.openGraph,
+      type: "article",
       title: article.title,
       description,
-      type: "article",
+      images: ogImage,
+      // No publishedTime: the only date this component has is already formatted
+      // for display ("September 2026"), and og:article:published_time wants
+      // ISO 8601. Getting the raw publishedAt through getInsights would be the
+      // fix if this is wanted later.
+    },
+    twitter: {
+      ...base.twitter,
+      images: ogImage.map((i) => i.url),
     },
   };
 }
