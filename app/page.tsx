@@ -3,6 +3,7 @@ import Button from "@/components/ui/Button";
 import { FadeUp, StaggerParent, StaggerChild } from "@/components/ui/Animate";
 import AssessmentFormSection from "@/components/homepage/AssessmentFormSection";
 import PrimaryServicesFilter from "@/components/homepage/PrimaryServicesFilter";
+import { CaseStudyProofStrip } from "@/components/homepage/CaseStudyProofStrip";
 import ImageSplit from "@/components/ui/ImageSplit";
 import ImageBand from "@/components/ui/ImageBand";
 import { BGPattern } from "@/components/ui/bg-pattern";
@@ -299,6 +300,16 @@ export default function Home() {
           </FadeUp>
 
           <PrimaryServicesFilter />
+
+          {/* Proof strip (brief item 08) — placed here, immediately after the
+              services choice, so the question "can they actually do it" is
+              answered at the point it gets asked. Contains a marked placeholder
+              until Jimmy supplies a shareable GrowthIQ metric. */}
+          <div style={{ marginTop: "3rem" }}>
+            <FadeUp>
+              <CaseStudyProofStrip />
+            </FadeUp>
+          </div>
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import Button from "@/components/ui/Button";
 import ListItem from "@/components/ui/ListItem";
 import ListGroup from "@/components/ui/ListGroup";
 import { FadeUp } from "@/components/ui/Animate";
+import { CaseStudyCallout } from "@/components/marketing/CaseStudyCallout";
 import { seo } from '@/lib/seo'
 import { ServiceJsonLd } from '@/components/seo/JsonLd'
 
@@ -237,6 +238,21 @@ export default function TeamTrainingHandoverPage() {
               </ListGroup>
             </FadeUp>
           </div>
+        </div>
+      </section>
+
+      {/* ── Case study (brief item 08) ── */}
+      <section
+        className={`${outerPad} py-16`}
+        style={{ backgroundColor: "var(--color-bg-primary)" }}
+      >
+        <div className={innerNarrow}>
+          <FadeUp>
+            <CaseStudyCallout
+              source="services_team_training_handover"
+              line="GrowthIQ — what was built, and what was handed over to the client's team."
+            />
+          </FadeUp>
         </div>
       </section>
 

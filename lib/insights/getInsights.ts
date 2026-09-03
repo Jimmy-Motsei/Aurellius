@@ -1,7 +1,31 @@
 import 'server-only'
 import type { PortableTextBlock } from 'next-sanity'
+import type { Image as SanityImage } from 'sanity'
 import { client } from '@/sanity/lib/client'
+import { urlForImage } from '@/sanity/lib/image'
 import { categoryImage } from '@/lib/insights/categoryImages'
+
+/**
+ * Cover image for an article: the editor's own upload if there is one, else the
+ * curated per-category image.
+ *
+ * The category fallback exists for the bi-weekly bot, which has no image to
+ * supply. But `post.mainImage` was in the schema and read by nothing — an
+ * editor could upload a cover in the Studio and it would be silently discarded.
+ * A hand-written article deserves its own image; a generated one still gets a
+ * sensible default.
+ */
+function coverImage(mainImage: SanityImage | null | undefined, category?: string | null): string {
+  if (mainImage?.asset) {
+    try {
+      return urlForImage(mainImage).width(1200).height(675).fit('crop').url()
+    } catch {
+      // A malformed asset ref should degrade to the category image, not 500 the
+      // whole Insights list.
+    }
+  }
+  return categoryImage(category)
+}
 
 // ─── Shapes consumed by the Insights pages ──────────────────────────────────
 
@@ -31,7 +55,8 @@ const LIST_QUERY = `*[_type == "post" && defined(slug.current) && defined(publis
     title,
     "category": coalesce(category, "Integration"),
     "excerpt": coalesce(excerpt, ""),
-    publishedAt
+    publishedAt,
+    mainImage
   }`
 
 const ARTICLE_QUERY = `*[_type == "post" && slug.current == $slug && defined(publishedAt) && publishedAt <= now()][0]{
@@ -41,6 +66,7 @@ const ARTICLE_QUERY = `*[_type == "post" && slug.current == $slug && defined(pub
     "excerpt": coalesce(excerpt, ""),
     publishedAt,
     "readTime": coalesce(readTime, "5 min read"),
+    mainImage,
     body,
     "sources": coalesce(sources, []),
     seoTitle,
@@ -57,7 +83,14 @@ function formatDate(iso?: string): string {
 /** Published posts, newest first. The newest is marked `featured`. */
 export async function getInsightList(): Promise<InsightListItem[]> {
   const rows = await client.fetch<
-    { slug: string; title: string; category: string; excerpt: string; publishedAt: string }[]
+    {
+      slug: string
+      title: string
+      category: string
+      excerpt: string
+      publishedAt: string
+      mainImage?: SanityImage
+    }[]
   >(LIST_QUERY, {}, { next: { revalidate: 600, tags: ['insights'] } })
 
   return rows.map((r, i) => ({
@@ -66,7 +99,7 @@ export async function getInsightList(): Promise<InsightListItem[]> {
     category: r.category,
     excerpt: r.excerpt,
     date: formatDate(r.publishedAt),
-    image: categoryImage(r.category),
+    image: coverImage(r.mainImage, r.category),
     featured: i === 0,
   }))
 }
@@ -79,6 +112,7 @@ export async function getInsightBySlug(slug: string): Promise<InsightArticle | n
     excerpt: string
     publishedAt: string
     readTime: string
+    mainImage?: SanityImage
     body: PortableTextBlock[]
     sources: { title?: string; url?: string }[]
     seoTitle?: string
@@ -92,7 +126,7 @@ export async function getInsightBySlug(slug: string): Promise<InsightArticle | n
     category: r.category,
     excerpt: r.excerpt,
     date: formatDate(r.publishedAt),
-    image: categoryImage(r.category),
+    image: coverImage(r.mainImage, r.category),
     featured: false,
     readTime: r.readTime,
     body: r.body ?? [],
