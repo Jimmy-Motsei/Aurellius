@@ -1,33 +1,35 @@
 /**
  * Links into the GrowthIQ case study.
  *
- * ─── A caveat worth reading before this ships ────────────────────────────────
+ * ─── Why internal links are NOT UTM-tagged ───────────────────────────────────
  *
- * The brief (Appendix A) asks for `utm_campaign=case_study` on *internal* links
- * into the case study, with a page-dependent source and medium. That is
- * implemented here, but it has a real cost that should be a deliberate choice
- * rather than a surprise:
+ * The brief (Appendix A) asked for `utm_campaign=case_study` on *internal*
+ * links into the case study. Jimmy overrode that on 3 Sep 2026, and this is why:
  *
  * **UTM parameters on same-site links restart the GA4 session and overwrite its
  * traffic source.** A visitor who arrives from Google and then clicks a tagged
  * internal link is re-attributed from `google / organic` to
- * `homepage / internal` mid-visit, and is counted as two sessions. On a site
- * with the traffic Maru currently has, a handful of these is enough to distort
- * the channel report that the H2 strategy is being steered by.
+ * `homepage / internal` mid-visit, and is counted as two sessions. At Maru's
+ * traffic volume a handful of these visibly distorts the channel report — the
+ * same report the H2 strategy is steered by.
  *
- * The information the brief wants — "which page sent people to the case study"
- * — is already available without UTMs, via GA4's page_referrer / previous-page
- * path on the case-study pageview, or by adding a plain custom event.
+ * The question the brief wanted answered — "which page sent people to the case
+ * study" — is already answerable without UTMs, from GA4's page_referrer /
+ * previous-page path on the case-study pageview, or a plain custom event.
  *
- * So: `TAG_INTERNAL_LINKS` below implements the brief as written. Flip it to
- * false to keep attribution intact; the anchors keep working either way, and
- * nothing else needs to change. The GrowthIQ → Maru backlink is a genuinely
- * cross-domain referral and is tagged regardless — that is what UTMs are for.
+ * The GrowthIQ → Maru footer backlink stays tagged (`utm_source=growthiq`,
+ * `utm_medium=referral`), and should: that is a genuine cross-domain referral,
+ * which is what UTM parameters are actually for. It lives in the growthiq repo,
+ * not here.
+ *
+ * `TAG_INTERNAL_LINKS` is kept as a switch rather than deleting the code, so the
+ * decision stays visible and reversible. Do not flip it back without re-reading
+ * the above.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-/** Set false to stop tagging same-site links (see the note above). */
-export const TAG_INTERNAL_LINKS = true
+/** Off by design — see the note above before changing. */
+export const TAG_INTERNAL_LINKS = false
 
 export const CASE_STUDY_PATH = '/case-studies/growthiq'
 
